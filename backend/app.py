@@ -29,6 +29,10 @@ def detect_category():
             from sentiment_from_images import detect_content
             print(f"[DEBUG] Calling detect_content for file: {temp_path}")
             result = detect_content(temp_path)
+        elif category == "vehicles":
+            print(f"[DEBUG] Importing detectors.vehicles and calling detect_vehicles")
+            from detectors.vehicles import detect_vehicles
+            result = detect_vehicles(temp_path)
         else:
             print(f"[DEBUG] Importing detectors.{category} and calling detect_{category}")
             detector_module = importlib.import_module(f'detectors.{category}')
