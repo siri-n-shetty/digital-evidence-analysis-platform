@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { Shield, Eye, FileImage, AlertTriangle, Camera, Zap, BarChart3, Users, Clock, Award, Smartphone } from 'lucide-react';
+import { Shield, Eye, FileImage, AlertTriangle, Camera, Zap, BarChart3, Users, Clock, Award, Smartphone, Crosshair } from 'lucide-react';
 
 export default function WelcomePage() {
   const detectionCategories = [
-    { icon: Shield, name: "ocr", description: "OCR/Text Detection" },
+    { icon: Crosshair, name: "weapons", description: "Guns, knives, weapons, dangerous objects" },
     { icon: AlertTriangle, name: "substances", description: "Drugs, cigarettes, contraband items" },
     { icon: BarChart3, name: "object", description: "Handbags, laptops, watches, electronics, valuable items" },
     { icon: FileImage, name: "content", description: "Photo IDs, invoices, documents, handwriting, barcodes, QR codes" },
@@ -248,15 +248,17 @@ export default function WelcomePage() {
                 const hasDanger = res.result && res.result.danger_words && res.result.danger_words.length > 0;
                 const hasVehicles = res.category === 'vehicles' && res.result && res.result.vehicles && res.result.vehicles.length > 0;
                 const hasAssets = res.category === 'object' && res.result && res.result.assets && res.result.assets.length > 0;
-                return isNegative || hasDanger || hasVehicles || hasAssets;
+                const hasWeapons = res.category === 'weapons' && res.result && res.result.weapons && res.result.weapons.length > 0;
+                return isNegative || hasDanger || hasVehicles || hasAssets || hasWeapons;
               })
               .map((res, idx) => {
                 const isNegative = res.result && res.result.sentiment && res.result.sentiment.label === 'NEGATIVE' && res.result.sentiment.score > 0.65;
                 const hasDanger = res.result && res.result.danger_words && res.result.danger_words.length > 0;
                 const hasVehicles = res.category === 'vehicles' && res.result && res.result.vehicles && res.result.vehicles.length > 0;
                 const hasAssets = res.category === 'object' && res.result && res.result.assets && res.result.assets.length > 0;
+                const hasWeapons = res.category === 'weapons' && res.result && res.result.weapons && res.result.weapons.length > 0;
                 return (
-                  <div key={idx} className={`bg-white rounded shadow p-4 ${isNegative || hasDanger ? 'border-2 border-red-500' : hasVehicles ? 'border-2 border-blue-500' : hasAssets ? 'border-2 border-green-500' : ''}`}>
+                  <div key={idx} className={`bg-white rounded shadow p-4 ${isNegative || hasDanger || hasWeapons ? 'border-2 border-red-500' : hasVehicles ? 'border-2 border-blue-500' : hasAssets ? 'border-2 border-green-500' : ''}`}>
                     <div className="font-semibold mb-2">{res.file}</div>
                     <div className="text-blue-600 mb-2">{res.category}</div>
                     {isNegative && (
@@ -265,6 +267,19 @@ export default function WelcomePage() {
                     {hasDanger && (
                       <div className="text-red-600 font-bold mb-2">Danger Words: {res.result.danger_words.join(', ')}</div>
                     )}
+                    {hasWeapons && (
+                      <div className="text-red-600 font-bold mb-2">⚠️ WEAPONS DETECTED!</div>
+                    )}
+                    {hasWeapons && res.result.weapons.map((weapon, wIdx) => (
+                      <div key={wIdx} className="mb-2 p-2 rounded bg-red-50 border border-red-200">
+                        <div className="font-semibold text-red-700">Type: {weapon.class}</div>
+                        <div className="text-red-600">Confidence: {weapon.confidence}%</div>
+                        {weapon.danger_level && (
+                          <div className="text-red-800 font-bold">⚠️ Danger Level: {weapon.danger_level}</div>
+                        )}
+                        <div className="text-sm text-red-500">Location: [{weapon.box.join(', ')}]</div>
+                      </div>
+                    ))}
                     {hasVehicles && (
                       <div className="text-blue-600 font-bold mb-2">Detected Vehicles:</div>
                     )}
@@ -287,7 +302,7 @@ export default function WelcomePage() {
                       <pre className="bg-slate-50 p-2 rounded text-xs overflow-x-auto">
                         {res.result.highlighted_text}
                       </pre>
-                    ) : (!hasVehicles && !hasAssets && (
+                    ) : (!hasVehicles && !hasAssets && !hasWeapons && (
                       <pre className="bg-slate-50 p-2 rounded text-xs overflow-x-auto">
                         {typeof res.result === "string"
                           ? res.result

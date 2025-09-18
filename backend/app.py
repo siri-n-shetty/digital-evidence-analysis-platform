@@ -37,6 +37,10 @@ def detect_category():
             print(f"[DEBUG] Importing detectors.objects and calling detect_assets")
             from detectors.objects import detect_assets
             result = detect_assets(temp_path)
+        elif category == "weapons":
+            print(f"[DEBUG] Importing detectors.weapons and calling detect_weapons")
+            from detectors.weapons import detect_weapons
+            result = detect_weapons(temp_path)
         else:
             print(f"[DEBUG] Importing detectors.{category} and calling detect_{category}")
             detector_module = importlib.import_module(f'detectors.{category}')
