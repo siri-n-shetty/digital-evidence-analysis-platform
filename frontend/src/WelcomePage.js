@@ -5,7 +5,7 @@ export default function WelcomePage() {
   const detectionCategories = [
     { icon: Shield, name: "ocr", description: "OCR/Text Detection" },
     { icon: AlertTriangle, name: "substances", description: "Drugs, cigarettes, contraband items" },
-    { icon: BarChart3, name: "currency", description: "Money, credit cards, jewelry, valuable items" },
+    { icon: BarChart3, name: "object", description: "Handbags, laptops, watches, electronics, valuable items" },
     { icon: FileImage, name: "content", description: "Photo IDs, invoices, documents, handwriting, barcodes, QR codes" },
     { icon: Camera, name: "vehicles", description: "Cars, motorcycles, license plates, vehicle dashboards" },
     { icon: Users, name: "people", description: "Faces, gatherings" },
@@ -247,14 +247,16 @@ export default function WelcomePage() {
                 const isNegative = res.result && res.result.sentiment && res.result.sentiment.label === 'NEGATIVE' && res.result.sentiment.score > 0.65;
                 const hasDanger = res.result && res.result.danger_words && res.result.danger_words.length > 0;
                 const hasVehicles = res.category === 'vehicles' && res.result && res.result.vehicles && res.result.vehicles.length > 0;
-                return isNegative || hasDanger || hasVehicles;
+                const hasAssets = res.category === 'object' && res.result && res.result.assets && res.result.assets.length > 0;
+                return isNegative || hasDanger || hasVehicles || hasAssets;
               })
               .map((res, idx) => {
                 const isNegative = res.result && res.result.sentiment && res.result.sentiment.label === 'NEGATIVE' && res.result.sentiment.score > 0.65;
                 const hasDanger = res.result && res.result.danger_words && res.result.danger_words.length > 0;
                 const hasVehicles = res.category === 'vehicles' && res.result && res.result.vehicles && res.result.vehicles.length > 0;
+                const hasAssets = res.category === 'object' && res.result && res.result.assets && res.result.assets.length > 0;
                 return (
-                  <div key={idx} className={`bg-white rounded shadow p-4 ${isNegative || hasDanger ? 'border-2 border-red-500' : hasVehicles ? 'border-2 border-blue-500' : ''}`}>
+                  <div key={idx} className={`bg-white rounded shadow p-4 ${isNegative || hasDanger ? 'border-2 border-red-500' : hasVehicles ? 'border-2 border-blue-500' : hasAssets ? 'border-2 border-green-500' : ''}`}>
                     <div className="font-semibold mb-2">{res.file}</div>
                     <div className="text-blue-600 mb-2">{res.category}</div>
                     {isNegative && (
@@ -272,11 +274,20 @@ export default function WelcomePage() {
                         <div>Plate(s): {veh.plates && veh.plates.length > 0 ? veh.plates.join(', ') : 'None detected'}</div>
                       </div>
                     ))}
+                    {hasAssets && (
+                      <div className="text-green-600 font-bold mb-2">Detected Assets:</div>
+                    )}
+                    {hasAssets && res.result.assets.map((asset, aIdx) => (
+                      <div key={aIdx} className="mb-2 p-2 rounded bg-green-50">
+                        <div className="font-semibold">Type: {asset.class}</div>
+                        <div>Location: [{asset.box.join(', ')}]</div>
+                      </div>
+                    ))}
                     {res.result && res.result.highlighted_text ? (
                       <pre className="bg-slate-50 p-2 rounded text-xs overflow-x-auto">
                         {res.result.highlighted_text}
                       </pre>
-                    ) : (!hasVehicles && (
+                    ) : (!hasVehicles && !hasAssets && (
                       <pre className="bg-slate-50 p-2 rounded text-xs overflow-x-auto">
                         {typeof res.result === "string"
                           ? res.result

@@ -56,4 +56,3 @@ def detect_assets(image_path):
                 })
     return {"assets": detected}
 
-detect_assets(r"D:\Semester7\CID\input\sample9.jpg")
