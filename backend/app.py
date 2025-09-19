@@ -2,11 +2,37 @@ from flask import Flask, request, jsonify
 import importlib
 import os
 import tempfile
+import base64
 
 from flask_cors import CORS
 
 app = Flask(__name__)
 CORS(app)
+
+def encode_image_to_base64(image_path):
+    """Convert image file to base64 string for frontend display"""
+    try:
+        with open(image_path, "rb") as image_file:
+            encoded_string = base64.b64encode(image_file.read()).decode('utf-8')
+            # Get file extension to determine MIME type
+            ext = os.path.splitext(image_path)[1].lower()
+            if ext in ['.jpg', '.jpeg']:
+                mime_type = 'image/jpeg'
+            elif ext == '.png':
+                mime_type = 'image/png'
+            elif ext == '.gif':
+                mime_type = 'image/gif'
+            elif ext in ['.bmp']:
+                mime_type = 'image/bmp'
+            elif ext in ['.tiff', '.tif']:
+                mime_type = 'image/tiff'
+            else:
+                mime_type = 'image/jpeg'  # default
+            
+            return f"data:{mime_type};base64,{encoded_string}"
+    except Exception as e:
+        print(f"[ERROR] Failed to encode image {image_path}: {e}")
+        return None
 
 @app.route('/detect', methods=['POST'])
 def detect_category():
@@ -25,6 +51,9 @@ def detect_category():
         temp_path = tmp.name
 
     try:
+        # Encode image for frontend display
+        image_base64 = encode_image_to_base64(temp_path)
+        
         if category == "content":
             from sentiment_from_images import detect_content
             print(f"[DEBUG] Calling detect_content for file: {temp_path}")
@@ -41,14 +70,28 @@ def detect_category():
             print(f"[DEBUG] Importing detectors.weapons and calling detect_weapons")
             from detectors.weapons import detect_weapons
             result = detect_weapons(temp_path)
+        elif category == "appearance":
+            print(f"[DEBUG] Importing detectors.nudity and calling detect_appearance")
+            from detectors.nudity import detect_appearance
+            result = detect_appearance(temp_path)
         else:
             print(f"[DEBUG] Importing detectors.{category} and calling detect_{category}")
             detector_module = importlib.import_module(f'detectors.{category}')
             detect_func = getattr(detector_module, f'detect_{category}')
             result = detect_func(temp_path)
+        
         os.remove(temp_path)  # Clean up temp file
         print(f"[DEBUG] Detection result: {result}")
-        return jsonify({"success": True, "result": result})
+        
+        # Add image data and filename to the response
+        response_data = {
+            "success": True, 
+            "result": result,
+            "filename": file.filename,
+            "image_data": image_base64
+        }
+        
+        return jsonify(response_data)
     except (ModuleNotFoundError, AttributeError) as e:
         print(f"[ERROR] Detector import/call failed: {e}")
         os.remove(temp_path)

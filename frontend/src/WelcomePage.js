@@ -107,7 +107,9 @@ export default function WelcomePage() {
           allResults.push({
             file: file.name,
             category,
-            result: data.result || data.error
+            result: data.result || data.error,
+            filename: data.filename || file.name,
+            imageData: data.image_data
           });
         }
       }
@@ -249,7 +251,8 @@ export default function WelcomePage() {
                 const hasVehicles = res.category === 'vehicles' && res.result && res.result.vehicles && res.result.vehicles.length > 0;
                 const hasAssets = res.category === 'object' && res.result && res.result.assets && res.result.assets.length > 0;
                 const hasWeapons = res.category === 'weapons' && res.result && res.result.weapons && res.result.weapons.length > 0;
-                return isNegative || hasDanger || hasVehicles || hasAssets || hasWeapons;
+                const hasNudity = res.category === 'appearance' && res.result && res.result.nudity_detected === true;
+                return isNegative || hasDanger || hasVehicles || hasAssets || hasWeapons || hasNudity;
               })
               .map((res, idx) => {
                 const isNegative = res.result && res.result.sentiment && res.result.sentiment.label === 'NEGATIVE' && res.result.sentiment.score > 0.65;
@@ -257,10 +260,30 @@ export default function WelcomePage() {
                 const hasVehicles = res.category === 'vehicles' && res.result && res.result.vehicles && res.result.vehicles.length > 0;
                 const hasAssets = res.category === 'object' && res.result && res.result.assets && res.result.assets.length > 0;
                 const hasWeapons = res.category === 'weapons' && res.result && res.result.weapons && res.result.weapons.length > 0;
+                const hasNudity = res.category === 'appearance' && res.result && res.result.nudity_detected === true;
                 return (
-                  <div key={idx} className={`bg-white rounded shadow p-4 ${isNegative || hasDanger || hasWeapons ? 'border-2 border-red-500' : hasVehicles ? 'border-2 border-blue-500' : hasAssets ? 'border-2 border-green-500' : ''}`}>
-                    <div className="font-semibold mb-2">{res.file}</div>
-                    <div className="text-blue-600 mb-2">{res.category}</div>
+                  <div key={idx} className={`bg-white rounded shadow p-4 ${isNegative || hasDanger || hasWeapons || hasNudity ? 'border-2 border-red-500' : hasVehicles ? 'border-2 border-blue-500' : hasAssets ? 'border-2 border-green-500' : ''}`}>
+                    {/* Header with filename and category */}
+                    <div className="flex items-start gap-4 mb-4">
+                      {/* Image thumbnail */}
+                      {res.imageData && (
+                        <div className="flex-shrink-0">
+                          <img 
+                            src={res.imageData} 
+                            alt={res.filename || res.file}
+                            className="w-24 h-24 object-cover rounded border shadow-sm"
+                          />
+                        </div>
+                      )}
+                      {/* File info */}
+                      <div className="flex-grow">
+                        <div className="font-semibold text-gray-800 mb-1">{res.filename || res.file}</div>
+                        <div className="text-blue-600 text-sm font-medium mb-2 capitalize">{res.category}</div>
+                      </div>
+                    </div>
+                    
+                    {/* Detection results */}
+                    <div className="space-y-2">
                     {isNegative && (
                       <div className="text-red-600 font-bold mb-2">Negative Sentiment Detected!</div>
                     )}
@@ -278,6 +301,19 @@ export default function WelcomePage() {
                           <div className="text-red-800 font-bold">⚠️ Danger Level: {weapon.danger_level}</div>
                         )}
                         <div className="text-sm text-red-500">Location: [{weapon.box.join(', ')}]</div>
+                      </div>
+                    ))}
+                    {hasNudity && (
+                      <div className="text-red-600 font-bold mb-2">🚨 INAPPROPRIATE CONTENT DETECTED!</div>
+                    )}
+                    {hasNudity && res.result.regions && res.result.regions.map((region, nIdx) => (
+                      <div key={nIdx} className="mb-2 p-2 rounded bg-red-50 border border-red-200">
+                        <div className="font-semibold text-red-700">Type: {region.description || region.label}</div>
+                        <div className="text-red-600">Confidence: {region.confidence}%</div>
+                        {region.risk_level && (
+                          <div className="text-red-800 font-bold">⚠️ Risk Level: {region.risk_level}</div>
+                        )}
+                        <div className="text-sm text-red-500">Location: [{region.box.join(', ')}]</div>
                       </div>
                     ))}
                     {hasVehicles && (
@@ -302,13 +338,14 @@ export default function WelcomePage() {
                       <pre className="bg-slate-50 p-2 rounded text-xs overflow-x-auto">
                         {res.result.highlighted_text}
                       </pre>
-                    ) : (!hasVehicles && !hasAssets && !hasWeapons && (
+                    ) : (!hasVehicles && !hasAssets && !hasWeapons && !hasNudity && (
                       <pre className="bg-slate-50 p-2 rounded text-xs overflow-x-auto">
                         {typeof res.result === "string"
                           ? res.result
                           : JSON.stringify(res.result, null, 2)}
                       </pre>
                     ))}
+                    </div>
                   </div>
                 );
               })}
