@@ -336,7 +336,7 @@ export default function WelcomePage() {
                       <pre className="bg-slate-50 p-2 rounded text-xs overflow-x-auto">
                         {res.result.highlighted_text}
                       </pre>
-                    ) : (!hasVehicles && !hasAssets && !hasWeapons && !hasNudity && (
+                    ) : (!hasVehicles && !hasAssets && !hasTechnology && !hasWeapons && !hasNudity && (
                       <pre className="bg-slate-50 p-2 rounded text-xs overflow-x-auto">
                         {typeof res.result === "string"
                           ? res.result

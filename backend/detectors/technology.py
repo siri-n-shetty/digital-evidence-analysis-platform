@@ -10,15 +10,20 @@ def detect_technology(image_path):
     # Perform detection
     results = model(image_path)
 
-    # Extract detected items and their confidence scores
+    # Define the specific technology items to detect
+    target_items = {"tv", "laptop", "mouse", "remote", "keyboard", "cell phone"}
+
+    # Extract detected items and their confidence scores, filtering for target items
     detected_items = []
     for result in results[0].boxes.data.tolist():
         x1, y1, x2, y2, confidence, class_id = result
-        detected_items.append({
-            "label": model.names[int(class_id)],
-            "confidence": round(confidence, 2),
-            "bbox": [x1, y1, x2, y2]
-        })
+        label = model.names[int(class_id)]
+        if label in target_items:
+            detected_items.append({
+                "label": label,
+                "confidence": round(confidence, 2),
+                "bbox": [x1, y1, x2, y2]
+            })
 
     return {
         "category": "technology",
