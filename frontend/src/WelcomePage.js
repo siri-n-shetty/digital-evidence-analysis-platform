@@ -238,7 +238,7 @@ export default function WelcomePage() {
                 const hasAssets = res.category === 'object' && res.result && res.result.assets && res.result.assets.length > 0;
                 const hasPeople = res.category === 'people' && res.result && res.result.detections && res.result.detections.length > 0;
                 const hasTechnology = res.category === 'technology' && res.result && res.result.detections && res.result.detections.length > 0;
-                const hasWeapons = res.category === 'weapons' && res.result && res.result.weapons && res.result.weapons.length > 0;
+                const hasWeapons = res.category === 'weapons' && res.result && res.result.detections && res.result.detections.length > 0;
                 const hasNudity = res.category === 'appearance' && res.result && res.result.nudity_detected === true;
                 return isNegative || hasDanger || hasVehicles || hasAssets || hasPeople || hasTechnology || hasWeapons || hasNudity;
               })
@@ -249,7 +249,7 @@ export default function WelcomePage() {
                 const hasAssets = res.category === 'object' && res.result && res.result.assets && res.result.assets.length > 0;
                 const hasPeople = res.category === 'people' && res.result && res.result.detections && res.result.detections.length > 0;
                 const hasTechnology = res.category === 'technology' && res.result && res.result.detections && res.result.detections.length > 0;
-                const hasWeapons = res.category === 'weapons' && res.result && res.result.weapons && res.result.weapons.length > 0;
+                const hasWeapons = res.category === 'weapons' && res.result && res.result.detections && res.result.detections.length > 0;
                 const hasNudity = res.category === 'appearance' && res.result && res.result.nudity_detected === true;
                 return (
                   <div key={idx} className={`bg-white rounded shadow p-4 ${isNegative || hasDanger || hasWeapons || hasNudity ? 'border-2 border-red-500' : hasVehicles ? 'border-2 border-blue-500' : hasAssets || hasTechnology || hasPeople ? 'border-2 border-green-500' : ''}`}>
@@ -283,14 +283,11 @@ export default function WelcomePage() {
                     {hasWeapons && (
                       <div className="text-red-600 font-bold mb-2">⚠️ WEAPONS DETECTED!</div>
                     )}
-                    {hasWeapons && res.result.weapons.map((weapon, wIdx) => (
+                    {hasWeapons && res.result.detections.map((weapon, wIdx) => (
                       <div key={wIdx} className="mb-2 p-2 rounded bg-red-50 border border-red-200">
-                        <div className="font-semibold text-red-700">Type: {weapon.class}</div>
-                        <div className="text-red-600">Confidence: {weapon.confidence}%</div>
-                        {weapon.danger_level && (
-                          <div className="text-red-800 font-bold">⚠️ Danger Level: {weapon.danger_level}</div>
-                        )}
-                        <div className="text-sm text-red-500">Location: [{weapon.box.join(', ')}]</div>
+                        <div className="font-semibold text-red-700">Type: {weapon.label}</div>
+                        <div className="text-red-600">Confidence: {Math.round(weapon.confidence * 100)}%</div>
+                        <div className="text-sm text-red-500">Location: [{weapon.bbox.join(', ')}]</div>
                       </div>
                     ))}
                     {hasNudity && (
@@ -301,7 +298,7 @@ export default function WelcomePage() {
                         <div className="font-semibold text-red-700">Type: {region.description || region.label}</div>
                         <div className="text-red-600">Confidence: {region.confidence}%</div>
                         {region.risk_level && (
-                          <div className="text-red-800 font-bold">⚠️ Risk Level: {region.risk_level}</div>
+                          <div className="text-red-800 font-bold">Risk Level: {region.risk_level}</div>
                         )}
                         <div className="text-sm text-red-500">Location: [{region.box.join(', ')}]</div>
                       </div>
