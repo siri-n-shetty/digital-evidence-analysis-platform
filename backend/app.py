@@ -66,6 +66,10 @@ def detect_category():
             print(f"[DEBUG] Importing detectors.objects and calling detect_assets")
             from detectors.objects import detect_assets
             result = detect_assets(temp_path)
+        elif category == "people":
+            print(f"[DEBUG] Importing detectors.objects and calling detect_assets")
+            from detectors.people import detect_people
+            result = detect_people(temp_path)
         elif category == "weapons":
             print(f"[DEBUG] Importing detectors.weapons and calling detect_weapons")
             from detectors.weapons import detect_weapons

@@ -36,7 +36,7 @@ from ultralytics import YOLO
 
 def detect_assets(image_path):
     model = YOLO('yolov8n.pt')  # Use yolov8m.pt or yolov8l.pt for better accuracy if you have GPU
-    asset_classes = ['handbag', 'wallet', 'watch', 'laptop', 'suitcase', 'umbrella', 'chair']  # Add more if needed
+    asset_classes = ['handbag', 'wallet', 'watch', 'laptop', 'suitcase', 'umbrella', 'chair', 'traffic light']  # Add more if needed
     image = cv2.imread(image_path)
     if image is None:
         return {"error": f"Image {image_path} not found."}
