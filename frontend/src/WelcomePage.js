@@ -17,6 +17,7 @@ export default function WelcomePage() {
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [results, setResults] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState("");
 
@@ -178,6 +179,17 @@ export default function WelcomePage() {
           </div>
         </div>
 
+        {/* Search bar */}
+        <div className="mb-6">
+          <input
+            type="text"
+            placeholder="Search by category, filename, or label..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value.toLowerCase())}
+            className="w-full md:w-1/2 px-4 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+
       </div>
 
       {/* Processing Throbber and Error */}
@@ -240,7 +252,18 @@ export default function WelcomePage() {
                 const hasTechnology = res.category === 'technology' && res.result && res.result.detections && res.result.detections.length > 0;
                 const hasWeapons = res.category === 'weapons' && res.result && res.result.detections && res.result.detections.length > 0;
                 const hasNudity = res.category === 'appearance' && res.result && res.result.nudity_detected === true;
-                return isNegative || hasDanger || hasVehicles || hasAssets || hasPeople || hasTechnology || hasWeapons || hasNudity;
+                // return isNegative || hasDanger || hasVehicles || hasAssets || hasPeople || hasTechnology || hasWeapons || hasNudity;
+
+                const matchesCategory = res.category.toLowerCase().includes(searchQuery);
+                const matchesFilename = (res.filename || res.file).toLowerCase().includes(searchQuery);
+                const matchesLabel =
+                  (res.result?.detections || [])
+                    .some(det => det.label.toLowerCase().includes(searchQuery));
+
+                return (
+                  (isNegative || hasDanger || hasVehicles || hasAssets || hasPeople || hasTechnology || hasWeapons || hasNudity) &&
+                  (searchQuery === "" || matchesCategory || matchesFilename || matchesLabel)
+                );
               })
               .map((res, idx) => {
                 const isNegative = res.result && res.result.sentiment && res.result.sentiment.label === 'NEGATIVE' && res.result.sentiment.score > 0.65;

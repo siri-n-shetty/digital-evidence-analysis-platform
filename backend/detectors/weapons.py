@@ -3,7 +3,7 @@ import cv2
 from ultralytics import YOLO
 
 # Load YOLO model once (replace with your custom weapons model if available)
-model_path = r'D:\Semester7\CID\final-workflow\backend\best.pt'
+model_path = r'D:\Semester7\CID\final-workflow\backend\yolov8n.pt'
 model = YOLO(model_path)
 
 def detect_weapons(image_path):
