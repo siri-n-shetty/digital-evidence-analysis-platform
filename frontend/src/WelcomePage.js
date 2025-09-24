@@ -234,7 +234,7 @@ export default function WelcomePage() {
               .filter(res => {
                 const isNegative = res.result && res.result.sentiment && res.result.sentiment.label === 'NEGATIVE' && res.result.sentiment.score > 0.65;
                 const hasDanger = res.result && res.result.danger_words && res.result.danger_words.length > 0;
-                const hasVehicles = res.category === 'vehicles' && res.result && res.result.vehicles && res.result.vehicles.length > 0;
+                const hasVehicles = res.category === 'vehicles' && res.result && res.result.detections && res.result.detections.length > 0;
                 const hasAssets = res.category === 'object' && res.result && res.result.assets && res.result.assets.length > 0;
                 const hasTechnology = res.category === 'technology' && res.result && res.result.detections && res.result.detections.length > 0;
                 const hasWeapons = res.category === 'weapons' && res.result && res.result.weapons && res.result.weapons.length > 0;
@@ -244,7 +244,7 @@ export default function WelcomePage() {
               .map((res, idx) => {
                 const isNegative = res.result && res.result.sentiment && res.result.sentiment.label === 'NEGATIVE' && res.result.sentiment.score > 0.65;
                 const hasDanger = res.result && res.result.danger_words && res.result.danger_words.length > 0;
-                const hasVehicles = res.category === 'vehicles' && res.result && res.result.vehicles && res.result.vehicles.length > 0;
+                const hasVehicles = res.category === 'vehicles' && res.result && res.result.detections && res.result.detections.length > 0;
                 const hasAssets = res.category === 'object' && res.result && res.result.assets && res.result.assets.length > 0;
                 const hasTechnology = res.category === 'technology' && res.result && res.result.detections && res.result.detections.length > 0;
                 const hasWeapons = res.category === 'weapons' && res.result && res.result.weapons && res.result.weapons.length > 0;
@@ -307,10 +307,12 @@ export default function WelcomePage() {
                     {hasVehicles && (
                       <div className="text-blue-600 font-bold mb-2">Detected Vehicles:</div>
                     )}
-                    {hasVehicles && res.result.vehicles.map((veh, vIdx) => (
+                    {hasVehicles && res.result.detections.map((veh, vIdx) => (
                       <div key={vIdx} className="mb-2 p-2 rounded bg-blue-50">
-                        <div className="font-semibold">Type: {veh.class}</div>
+                        <div className="font-semibold">Type: {veh.label}</div>
+                        <div>Confidence: {veh.confidence}</div>
                         <div>Plate(s): {veh.plates && veh.plates.length > 0 ? veh.plates.join(', ') : 'None detected'}</div>
+                        <div className="text-sm text-gray-600">Location: [{veh.bbox.join(', ')}]</div>
                       </div>
                     ))}
                     {hasAssets && (
