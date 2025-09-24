@@ -1,18 +1,15 @@
 import React, { useState } from 'react';
-import { Shield, Eye, FileImage, AlertTriangle, Camera, Zap, BarChart3, Users, Clock, Award, Smartphone, Crosshair } from 'lucide-react';
+import { Shield, FileImage, Camera, BarChart3, Users, Clock, Award, Smartphone, Crosshair } from 'lucide-react';
 
 export default function WelcomePage() {
   const detectionCategories = [
     { icon: Crosshair, name: "weapons", description: "Guns, knives, weapons, dangerous objects" },
-    { icon: AlertTriangle, name: "substances", description: "Drugs, cigarettes, contraband items" },
     { icon: BarChart3, name: "object", description: "Handbags, laptops, watches, electronics, valuable items" },
-    { icon: FileImage, name: "content", description: "Photo IDs, invoices, documents, handwriting, barcodes, QR codes" },
-    { icon: Camera, name: "vehicles", description: "Cars, motorcycles, license plates, vehicle dashboards" },
+    { icon: FileImage, name: "content", description: "Photo IDs, invoices, documents, handwriting" },
+    { icon: Camera, name: "vehicles", description: "Cars, motorcycles, license plates" },
     { icon: Users, name: "people", description: "Faces, gatherings" },
-    { icon: Eye, name: "locations", description: "Beach, hotel rooms, pool, restaurant, maps" },
-    { icon: Zap, name: "food", description: "Food" },
     { icon: Smartphone, name: "technology", description: "Camera, smartphones" },
-    { icon: Award, name: "appearance", description: "Tattoos, nudity, flags, handheld objects" }
+    { icon: Award, name: "appearance", description: "Tattoos, nudity, flags" }
   ];
 
   const availableCategories = detectionCategories.map(c => c.name);
