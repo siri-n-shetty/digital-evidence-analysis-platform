@@ -8,7 +8,7 @@ def detect_vehicles(image_path):
     model = YOLO('yolov8n.pt')  # lightweight model, good for CPU
     reader = easyocr.Reader(['en'])
 
-    vehicle_classes = ['car', 'motorcycle', 'bus', 'truck', 'bicycle']
+    vehicle_classes = ['bicycle', 'car', 'motorcycle', 'airplane', 'bus', 'train', 'truck', 'boat']
     image = cv2.imread(image_path)
     if image is None:
         return {"error": f"Image {image_path} not found."}

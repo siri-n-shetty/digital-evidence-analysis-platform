@@ -20,17 +20,6 @@ export default function WelcomePage() {
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState("");
 
-  // Handle folder selection
-  // const handleFolderChange = (e) => {
-  //   setError("");
-  //   const files = e.target.files;
-  //   if (files.length > 0) {
-  //     const folderName = files[0].webkitRelativePath.split('/')[0];
-  //     setSelectedFolder(folderName);
-  //     setShowCategoryModal(true);
-  //   }
-  // };
-
   const handleFolderChange = (e) => {
     setError("");
     const files = Array.from(e.target.files);
@@ -247,19 +236,21 @@ export default function WelcomePage() {
                 const hasDanger = res.result && res.result.danger_words && res.result.danger_words.length > 0;
                 const hasVehicles = res.category === 'vehicles' && res.result && res.result.vehicles && res.result.vehicles.length > 0;
                 const hasAssets = res.category === 'object' && res.result && res.result.assets && res.result.assets.length > 0;
+                const hasTechnology = res.category === 'technology' && res.result && res.result.detections && res.result.detections.length > 0;
                 const hasWeapons = res.category === 'weapons' && res.result && res.result.weapons && res.result.weapons.length > 0;
                 const hasNudity = res.category === 'appearance' && res.result && res.result.nudity_detected === true;
-                return isNegative || hasDanger || hasVehicles || hasAssets || hasWeapons || hasNudity;
+                return isNegative || hasDanger || hasVehicles || hasAssets || hasTechnology || hasWeapons || hasNudity;
               })
               .map((res, idx) => {
                 const isNegative = res.result && res.result.sentiment && res.result.sentiment.label === 'NEGATIVE' && res.result.sentiment.score > 0.65;
                 const hasDanger = res.result && res.result.danger_words && res.result.danger_words.length > 0;
                 const hasVehicles = res.category === 'vehicles' && res.result && res.result.vehicles && res.result.vehicles.length > 0;
                 const hasAssets = res.category === 'object' && res.result && res.result.assets && res.result.assets.length > 0;
+                const hasTechnology = res.category === 'technology' && res.result && res.result.detections && res.result.detections.length > 0;
                 const hasWeapons = res.category === 'weapons' && res.result && res.result.weapons && res.result.weapons.length > 0;
                 const hasNudity = res.category === 'appearance' && res.result && res.result.nudity_detected === true;
                 return (
-                  <div key={idx} className={`bg-white rounded shadow p-4 ${isNegative || hasDanger || hasWeapons || hasNudity ? 'border-2 border-red-500' : hasVehicles ? 'border-2 border-blue-500' : hasAssets ? 'border-2 border-green-500' : ''}`}>
+                  <div key={idx} className={`bg-white rounded shadow p-4 ${isNegative || hasDanger || hasWeapons || hasNudity ? 'border-2 border-red-500' : hasVehicles ? 'border-2 border-blue-500' : hasAssets || hasTechnology ? 'border-2 border-green-500' : ''}`}>
                     {/* Header with filename and category */}
                     <div className="flex items-start gap-4 mb-4">
                       {/* Image thumbnail */}
@@ -329,6 +320,16 @@ export default function WelcomePage() {
                       <div key={aIdx} className="mb-2 p-2 rounded bg-green-50">
                         <div className="font-semibold">Type: {asset.class}</div>
                         <div>Location: [{asset.box.join(', ')}]</div>
+                      </div>
+                    ))}
+                    {hasTechnology && (
+                      <div className="text-green-600 font-bold mb-2">Detected Technology:</div>
+                    )}
+                    {hasTechnology && res.result.detections.map((tech, tIdx) => (
+                      <div key={tIdx} className="mb-2 p-2 rounded bg-green-50">
+                        <div className="font-semibold">Type: {tech.label}</div>
+                        <div>Confidence: {tech.confidence}</div>
+                        <div>Location: [{tech.bbox.join(', ')}]</div>
                       </div>
                     ))}
                     {res.result && res.result.highlighted_text ? (

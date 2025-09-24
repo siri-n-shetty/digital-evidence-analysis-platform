@@ -74,6 +74,10 @@ def detect_category():
             print(f"[DEBUG] Importing detectors.nudity and calling detect_appearance")
             from detectors.nudity import detect_appearance
             result = detect_appearance(temp_path)
+        elif category == "technology":
+            print(f"[DEBUG] Importing detectors.technology and calling detect_technology")
+            from detectors.technology import detect_technology
+            result = detect_technology(temp_path)
         else:
             print(f"[DEBUG] Importing detectors.{category} and calling detect_{category}")
             detector_module = importlib.import_module(f'detectors.{category}')
