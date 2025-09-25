@@ -52,11 +52,16 @@ def detect_category():
 
     try:
         # Encode image for frontend display
-        image_base64 = encode_image_to_base64(temp_path)
+        # image_base64 = encode_image_to_base64(temp_path)
+
+        image_base64 = None
+        ext = os.path.splitext(file.filename)[1].lower()
+        if ext in ('.png', '.jpg', '.jpeg', '.gif', '.bmp', '.tiff', '.tif', '.webp'):
+            image_base64 = encode_image_to_base64(temp_path)
         
         if category == "content":
-            from sentiment_from_images import detect_content
             print(f"[DEBUG] Calling detect_content for file: {temp_path}")
+            from detectors.sentiment_from_images import detect_content
             result = detect_content(temp_path, original_filename=file.filename)
         elif category == "vehicles":
             print(f"[DEBUG] Importing detectors.vehicles and calling detect_vehicles")

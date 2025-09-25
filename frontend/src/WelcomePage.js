@@ -48,33 +48,6 @@ export default function WelcomePage() {
   );
 };
 
-  // Send request to backend after category selection
-  // const handleSubmit = async () => {
-  //   setError("");
-  //   setProcessing(true);
-  //   setResults({ images: [], videos: [] });
-  //   try {
-  //     const res = await fetch('http://localhost:5000/process', {
-  //       method: 'POST',
-  //       headers: { 'Content-Type': 'application/json' },
-  //       body: JSON.stringify({
-  //         input_dir: `${selectedFolder}`,
-  //         categories: selectedCategories
-  //       })
-  //     });
-  //     if (!res.ok) {
-  //       throw new Error(`Server error: ${res.status}`);
-  //     }
-  //     const data = await res.json();
-  //     setResults(data.result || { images: [], videos: [] });
-  //   } catch (err) {
-  //     setError(err.message || "Failed to fetch results");
-  //   } finally {
-  //     setProcessing(false);
-  //     setShowCategoryModal(false);
-  //   }
-  // };
-
   const handleSubmit = async () => {
     setError("");
     setProcessing(true);
@@ -244,38 +217,59 @@ export default function WelcomePage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {results
               .filter(res => {
-                const isNegative = res.result && res.result.sentiment && res.result.sentiment.label === 'NEGATIVE' && res.result.sentiment.score > 0.65;
-                const hasDanger = res.result && res.result.danger_words && res.result.danger_words.length > 0;
+                const q = (searchQuery || "").toLowerCase();
+
+                const isContent = (res.category || "").toLowerCase() === "content";
+                const suicidalHit =
+                  isContent &&
+                  res.result &&
+                  res.result.suicidal_label === "suicidal" &&
+                  typeof res.result.suicidal_score === "number" &&
+                  res.result.suicidal_score > 0.65;
+
+                const hasDanger = res.result && Array.isArray(res.result.danger_words) && res.result.danger_words.length > 0;
                 const hasVehicles = res.category === 'vehicles' && res.result && res.result.detections && res.result.detections.length > 0;
                 const hasAssets = res.category === 'object' && res.result && res.result.assets && res.result.assets.length > 0;
                 const hasPeople = res.category === 'people' && res.result && res.result.detections && res.result.detections.length > 0;
                 const hasTechnology = res.category === 'technology' && res.result && res.result.detections && res.result.detections.length > 0;
                 const hasWeapons = res.category === 'weapons' && res.result && res.result.detections && res.result.detections.length > 0;
                 const hasNudity = res.category === 'appearance' && res.result && res.result.nudity_detected === true;
-                // return isNegative || hasDanger || hasVehicles || hasAssets || hasPeople || hasTechnology || hasWeapons || hasNudity;
 
-                const matchesCategory = res.category.toLowerCase().includes(searchQuery);
-                const matchesFilename = (res.filename || res.file).toLowerCase().includes(searchQuery);
+                const matchesCategory = (res.category || "").toLowerCase().includes(q);
+                const matchesFilename = ((res.filename || res.file) || "").toLowerCase().includes(q);
                 const matchesLabel =
-                  (res.result?.detections || [])
-                    .some(det => det.label.toLowerCase().includes(searchQuery));
+                  (res.result?.detections || []).some(det => det.label && det.label.toLowerCase().includes(q)) ||
+                  (res.result?.highlighted_text || "").toLowerCase().includes(q) ||
+                  (res.result?.detected_text || "").toLowerCase().includes(q);
+                
+                const important = suicidalHit || hasDanger || hasVehicles || hasAssets || hasPeople || hasTechnology || hasWeapons || hasNudity;
 
-                return (
-                  (isNegative || hasDanger || hasVehicles || hasAssets || hasPeople || hasTechnology || hasWeapons || hasNudity) &&
-                  (searchQuery === "" || matchesCategory || matchesFilename || matchesLabel)
-                );
+                return important && (q === "" || matchesCategory || matchesFilename || matchesLabel);
               })
+
               .map((res, idx) => {
-                const isNegative = res.result && res.result.sentiment && res.result.sentiment.label === 'NEGATIVE' && res.result.sentiment.score > 0.65;
-                const hasDanger = res.result && res.result.danger_words && res.result.danger_words.length > 0;
+                const isContent = (res.category || "").toLowerCase() === "content";
+                const suicidalHit =
+                  isContent &&
+                  res.result &&
+                  res.result.suicidal_label === "suicidal" &&
+                  typeof res.result.suicidal_score === "number" &&
+                  res.result.suicidal_score > 0.65;
+                const hasDanger = res.result && Array.isArray(res.result.danger_words) && res.result.danger_words.length > 0;
                 const hasVehicles = res.category === 'vehicles' && res.result && res.result.detections && res.result.detections.length > 0;
                 const hasAssets = res.category === 'object' && res.result && res.result.assets && res.result.assets.length > 0;
                 const hasPeople = res.category === 'people' && res.result && res.result.detections && res.result.detections.length > 0;
                 const hasTechnology = res.category === 'technology' && res.result && res.result.detections && res.result.detections.length > 0;
                 const hasWeapons = res.category === 'weapons' && res.result && res.result.detections && res.result.detections.length > 0;
                 const hasNudity = res.category === 'appearance' && res.result && res.result.nudity_detected === true;
+
+                const borderClass =
+                  (suicidalHit || hasDanger || hasWeapons || hasNudity) ? 'border-2 border-red-500' :
+                  (hasVehicles ? 'border-2 border-blue-500' :
+                  (hasAssets || hasTechnology || hasPeople ? 'border-2 border-green-500' : ''));
+
                 return (
-                  <div key={idx} className={`bg-white rounded shadow p-4 ${isNegative || hasDanger || hasWeapons || hasNudity ? 'border-2 border-red-500' : hasVehicles ? 'border-2 border-blue-500' : hasAssets || hasTechnology || hasPeople ? 'border-2 border-green-500' : ''}`}>
+                  <div key={idx} className={`bg-white rounded shadow p-4 ${borderClass}`}>
                     {/* Header with filename and category */}
                     <div className="flex items-start gap-4 mb-4">
                       {/* Image thumbnail */}
@@ -297,14 +291,22 @@ export default function WelcomePage() {
                     
                     {/* Detection results */}
                     <div className="space-y-2">
-                    {isNegative && (
-                      <div className="text-red-600 font-bold mb-2">Negative Sentiment Detected!</div>
+                    {/* content (text/pdf) results */}
+                    {isContent && suicidalHit && (
+                      <div className="text-red-600 font-bold mb-2">Suicidal content detected (score: {res.result.suicidal_score})</div>
                     )}
-                    {hasDanger && (
+                    {isContent && hasDanger && (
                       <div className="text-red-600 font-bold mb-2">Danger Words: {res.result.danger_words.join(', ')}</div>
                     )}
+
+                    {/* show highlighted text or detected_text */}
+                    {res.result && (res.result.highlighted_text || res.result.detected_text) && (
+                      <pre className="bg-slate-50 p-2 rounded text-xs overflow-x-auto">
+                        {res.result.highlighted_text || res.result.detected_text}
+                      </pre>
+                    )}
                     {hasWeapons && (
-                      <div className="text-red-600 font-bold mb-2">⚠️ WEAPONS DETECTED!</div>
+                      <div className="text-red-600 font-bold mb-2">WEAPONS DETECTED!</div>
                     )}
                     {hasWeapons && res.result.detections.map((weapon, wIdx) => (
                       <div key={wIdx} className="mb-2 p-2 rounded bg-red-50 border border-red-200">
@@ -314,7 +316,7 @@ export default function WelcomePage() {
                       </div>
                     ))}
                     {hasNudity && (
-                      <div className="text-red-600 font-bold mb-2">🚨 INAPPROPRIATE CONTENT DETECTED!</div>
+                      <div className="text-red-600 font-bold mb-2">INAPPROPRIATE CONTENT DETECTED!</div>
                     )}
                     {hasNudity && res.result.regions && res.result.regions.map((region, nIdx) => (
                       <div key={nIdx} className="mb-2 p-2 rounded bg-red-50 border border-red-200">

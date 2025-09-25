@@ -10,7 +10,7 @@ def detect_weapons(image_path):
     """Detect weapons (guns, knives, etc.) in the given image."""
 
     # NOTE: Default COCO model only has 'knife'. 
-    weapon_classes = {"knife"}  
+    weapon_classes = {"knife", "scissors"}  
 
     image = cv2.imread(image_path)
     if image is None:
