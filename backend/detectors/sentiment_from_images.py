@@ -11,7 +11,7 @@ from docx import Document
 suicide_pipe = pipeline("text-classification", model="sentinet/suicidality")
 ocr_reader = easyocr.Reader(['en'])
 
-danger_words = ["kill", "death", "murder", "suicide", "die", "dead", "hurt", "pain"]
+danger_words = ["kill", "death", "murder", "suicide", "die", "dead", "hurt", "pain", "fuck", "fck", "bastard", "gay", "mfcker"]
 threshold = 0.65
 
 def load_image(image_path):

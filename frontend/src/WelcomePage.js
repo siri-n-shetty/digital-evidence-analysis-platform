@@ -296,7 +296,7 @@ export default function WelcomePage() {
                       <div className="text-red-600 font-bold mb-2">Suicidal content detected (score: {res.result.suicidal_score})</div>
                     )}
                     {isContent && hasDanger && (
-                      <div className="text-red-600 font-bold mb-2">Danger Words: {res.result.danger_words.join(', ')}</div>
+                      <div className="text-red-600 font-bold mb-2">Danger/Vulgar Words: {res.result.danger_words.join(', ')}</div>
                     )}
 
                     {/* show highlighted text or detected_text */}
