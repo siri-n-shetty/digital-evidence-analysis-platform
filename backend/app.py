@@ -3,6 +3,7 @@ import importlib
 import os
 import tempfile
 import base64
+import subprocess
 
 from flask_cors import CORS
 
@@ -96,7 +97,6 @@ def detect_category():
         os.remove(temp_path)  # Clean up temp file
         print(f"[DEBUG] Detection result: {result}")
         
-        # Add image data and filename to the response
         response_data = {
             "success": True, 
             "result": result,
@@ -113,6 +113,59 @@ def detect_category():
         print(f"[ERROR] Unexpected error: {e}")
         os.remove(temp_path)
         return jsonify({"success": False, "error": str(e)}), 500
+    
+@app.route('/process_dump', methods=['POST'])
+def process_dump():
+    file = request.files.get('dump_file')
 
-if __name__ == '__main__':
-    app.run(port=5000)
+    if not file:
+        return jsonify({"success": False, "error": "No file provided"}), 400
+
+    # Save dump temporarily
+    with tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(file.filename)[1]) as tmp:
+        file.save(tmp.name)
+        temp_path = tmp.name
+
+    try:
+        base_output_dir = r"D:\Semester7\CID"
+        os.makedirs(base_output_dir, exist_ok=True)
+
+        run_id = os.path.splitext(file.filename)[0]
+        output_dir = os.path.join(base_output_dir, run_id)
+        if os.path.exists(output_dir):
+            import shutil
+            shutil.rmtree(output_dir)
+        os.makedirs(output_dir, exist_ok=True)
+
+        def win_to_wsl_path(win_path):
+            drive, rest = win_path[0], win_path[2:]
+            return f"/mnt/{drive.lower()}/{rest.replace('\\', '/')}"
+
+        temp_path_wsl = win_to_wsl_path(temp_path)
+        output_dir_wsl = win_to_wsl_path(output_dir)
+
+        command = ["wsl", "foremost", "-i", temp_path_wsl, "-o", output_dir_wsl]
+        try:
+            result = subprocess.run(command, check=True, capture_output=True, text=True)
+            print(f"[INFO] Foremost output: {result.stdout}")
+        except subprocess.CalledProcessError as e:
+            print(f"[ERROR] Foremost failed: {e.stderr}")
+            raise Exception("Foremost failed to process the dump file")
+
+        folder_structure = []
+        for root, dirs, files in os.walk(output_dir):
+            folder_structure.append({
+                "path": root,
+                "folders": dirs,
+                "files": files
+            })
+
+        os.remove(temp_path)
+
+        return jsonify({"status": "success", "folder_structure": folder_structure})
+    except Exception as e:
+        print(f"[ERROR] Failed to process dump: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000, debug=True)

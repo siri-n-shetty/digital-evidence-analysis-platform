@@ -21,6 +21,53 @@ export default function WelcomePage() {
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState("");
 
+  const [forensicDumpResults, setForensicDumpResults] = useState([]);
+  const [processingDump, setProcessingDump] = useState(false);
+
+  const handleDumpUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    setProcessingDump(true);
+    setError("");
+    try {
+      const formData = new FormData();
+      formData.append("dump_file", file);
+
+      const res = await fetch("http://localhost:5000/process_dump", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (data.status === "success") {
+        setForensicDumpResults(data.folder_structure || []);
+      } else {
+        setError(data.error || "Failed to process forensic dump");
+      }
+    } catch (err) {
+      setError(err.message || "Failed to process forensic dump");
+    } finally {
+      setProcessingDump(false);
+    }
+  };
+
+  const renderFolderStructure = (folders) => {
+    return folders.map((folder, index) => (
+      <div key={index} className="ml-4">
+        <div className="font-bold">{folder.path}</div>
+        <ul>
+          {folder.files.map((file, idx) => (
+            <li key={idx} className="text-sm">
+              {file}
+            </li>
+          ))}
+        </ul>
+        {folder.folders.length > 0 && renderFolderStructure(folder.folders)}
+      </div>
+    ));
+  };
+
   const handleFolderChange = (e) => {
     setError("");
     const files = Array.from(e.target.files);
@@ -131,6 +178,15 @@ export default function WelcomePage() {
                 accept=".jpg,.jpeg,.png,.bmp,.tiff,.gif,.txt,.pdf,.docx"
               />
             </label>
+            <label className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-semibold transition-colors shadow-sm cursor-pointer">
+              Upload Forensic Dump
+              <input
+                type="file"
+                style={{ display: "none" }}
+                onChange={handleDumpUpload}
+                accept=".E01,.dd,.img"
+              />
+            </label>
           </div>
         </div>
 
@@ -166,6 +222,20 @@ export default function WelcomePage() {
       </div>
 
       {/* Processing Throbber and Error */}
+      {processingDump && (
+            <div className="flex justify-center items-center my-8">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-green-600 border-solid"></div>
+              <span className="ml-4 text-green-600 font-semibold">Processing...</span>
+            </div>
+          )}
+
+          {forensicDumpResults.length > 0 && (
+            <div className="mt-8">
+              <h3 className="text-xl font-bold mb-4">Extracted Folder Structure</h3>
+              {renderFolderStructure(forensicDumpResults)}
+            </div>
+          )}
+          
       {processing && (
         <div className="flex justify-center items-center my-8">
           <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-blue-600 border-solid"></div>
