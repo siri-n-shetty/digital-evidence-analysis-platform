@@ -8,12 +8,12 @@ export default function WelcomePage() {
 
   const detectionCategories = [
     { icon: Crosshair, name: "weapons", description: "Guns, knives, weapons, dangerous objects" },
-    { icon: BarChart3, name: "object", description: "Handbags, laptops, watches, electronics, valuable items" },
-    { icon: FileImage, name: "content", description: "Photo IDs, invoices, documents, handwriting" },
-    { icon: Camera, name: "vehicles", description: "Cars, motorcycles, license plates" },
+    { icon: BarChart3, name: "object", description: "Handbags, wallet, watches, suitcase, valuable items" },
+    { icon: FileImage, name: "content", description: "Documents, Handwriting- Sensitive Content" },
+    { icon: Camera, name: "vehicles", description: "Cars, motorcycles, trucks, bicycle, license plates" },
     { icon: Users, name: "people", description: "Faces, gatherings" },
-    { icon: Smartphone, name: "technology", description: "Camera, smartphones" },
-    { icon: Award, name: "appearance", description: "Tattoos, nudity, flags" }
+    { icon: Smartphone, name: "technology", description: "Camera, Smartphones, Laptop, TV" },
+    { icon: FileImage, name: "oscenity", description: "Explicit Content" }
   ];
 
   return (
