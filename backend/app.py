@@ -80,7 +80,7 @@ def detect_category():
             print(f"[DEBUG] Importing detectors.weapons and calling detect_weapons")
             from detectors.weapons import detect_weapons
             result = detect_weapons(temp_path)
-        elif category == "appearance":
+        elif category == "obscenity":
             print(f"[DEBUG] Importing detectors.nudity and calling detect_appearance")
             from detectors.nudity import detect_appearance
             result = detect_appearance(temp_path)
